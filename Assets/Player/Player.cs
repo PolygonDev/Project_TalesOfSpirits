@@ -12,16 +12,19 @@ public class Player : KinematicBody2D
 	String zoomout = "zoomout";
 
 	Vector2 UP = new Vector2(0, -1);
+	Vector2 DOWN = new Vector2(0, 1);
 
 	[Export]
 	int speed = 300;
 	[Export]
 	float baseGravity = 27f;
 	[Export]
-	float jump_power = -35;
+	float jump_power = 36;
 	[Export]
-	float jump_speed = 160;
+	float jump_speed = 170;
 
+	Vector2 globalVector = new Vector2(0, 1);
+	Vector2 mathAngleToglobal = new Vector2(0, 0);
 
 	float nowGravity = 0f;
 	bool isJumping = false;
@@ -35,6 +38,7 @@ public class Player : KinematicBody2D
 	RichTextLabel rtx = null;
 	RichTextLabel zoomfac = null;
 	RichTextLabel isinair = null;
+	RichTextLabel movvec = null;
 	Camera2D cam = null;
 
 	float zoomfactor = 0f;
@@ -46,6 +50,7 @@ public class Player : KinematicBody2D
 		rtx = GetNode<RichTextLabel>("Camera2D/movement");
 		zoomfac = GetNode<RichTextLabel>("Camera2D/zoomfactor");
 		isinair = GetNode<RichTextLabel>("Camera2D/isinair");
+		movvec = GetNode<RichTextLabel>("Camera2D/movvec");
 		cam = GetNode<Camera2D>("Camera2D");
 
 		nowGravity = baseGravity;
@@ -61,12 +66,10 @@ public class Player : KinematicBody2D
 	Vector2 zoom = new Vector2(0, 0);
 	Vector2 movement = new Vector2(0, 0);
 
+	float jumpings = 0;
+
 	public override void _PhysicsProcess(float delta)
 	{
-		zoomfac.Text = "zoom: " + cam.Zoom.x;
-		rtx.Text = "move: " + movement.x;
-		isinair.Text = "inAir: " + !IsOnFloor();
-
 		if (movement.y <= 1200)
 		{
 			nowGravity *= 1.013f;
@@ -83,13 +86,29 @@ public class Player : KinematicBody2D
 		{
 			isJumping = false;
 			nowGravity = baseGravity;
-			movement.y = 0;
+			movement.y = baseGravity;
 		}
 
 		check_key_input();
 		setAnimation();
 
-		MoveAndSlideWithSnap(movement, new Vector2(0, 1), UP);
+		movement.y *= DOWN.y;
+
+		//Vectoren ins globale system umwandeln
+		Vector2 vec1 = movement.Rotated(Rotation);
+		Vector2 vec2 = UP.Rotated((float) (Rotation - (180 * (Math.PI / 180))));
+		Vector2 vec3 = DOWN.Rotated((float)(Rotation - (180 * (Math.PI / 180))));
+
+		//Debug texte
+		zoomfac.Text = "zoom: " + cam.Zoom.x;
+		rtx.Text = "move: " + movement.x;
+		isinair.Text = "inAir: " + !IsOnFloor();
+		movvec.Text = "movec: " + vec1 + " uprot: " + vec2 + " downrot: " + vec3 + " globalrot: " + RotationDegrees;
+
+		//Hier bewegt es sich dann wirklich mit den globalen vectoren da hier eben nur global bewegt wird
+		MoveAndSlideWithSnap(vec1, vec2, vec3);
+
+		//wenn fertig mit laufen nach rechts und links wird es auf 0 gesetzt
 		movement.x = 0;
 	}
 
@@ -120,8 +139,10 @@ public class Player : KinematicBody2D
 		}
 		if (Input.IsActionJustPressed(jump) && IsOnFloor())
 		{
+
 			isJumping = true;
-			movement.y += jump_power * baseGravity;
+			movement.y -= jump_power * baseGravity;
+			jumpings = movement.y;
 		}
 		if (Input.IsActionJustPressed(zoomin))
 		{
@@ -153,6 +174,10 @@ public class Player : KinematicBody2D
 		{
 
 			GetTree().Quit();
+		}
+		if (Input.IsActionJustPressed("debug"))
+		{
+			RotationDegrees += 4f;
 		}
 	}
 

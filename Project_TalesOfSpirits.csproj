@@ -53,6 +53,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\GravityArea\GravityArea.cs" />
     <Compile Include="Assets\Player\Player.cs" />
     <Compile Include="Assets\Scenes\fps.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
