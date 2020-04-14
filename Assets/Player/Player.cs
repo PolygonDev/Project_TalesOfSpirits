@@ -34,6 +34,7 @@ public class Player : KinematicBody2D
 
 	// Called when the node enters the scene tree for the first time.
 	AnimationPlayer animplayer = null;
+	AnimationPlayer rotateplayer = null;
 	Sprite sprite = null;
 	RichTextLabel rtx = null;
 	RichTextLabel zoomfac = null;
@@ -46,6 +47,7 @@ public class Player : KinematicBody2D
 	public override void _Ready()
 	{
 		animplayer = GetNode<AnimationPlayer>("AnimationPlayer");
+		rotateplayer = GetNode<AnimationPlayer>("RotatePlayer");
 		sprite = GetNode<Sprite>("Sprite");
 		rtx = GetNode<RichTextLabel>("Camera2D/movement");
 		zoomfac = GetNode<RichTextLabel>("Camera2D/zoomfactor");
@@ -103,7 +105,7 @@ public class Player : KinematicBody2D
 		zoomfac.Text = "zoom: " + cam.Zoom.x;
 		rtx.Text = "move: " + movement.x;
 		isinair.Text = "inAir: " + !IsOnFloor();
-		movvec.Text = "movec: " + vec1 + " uprot: " + vec2 + " downrot: " + vec3 + " globalrot: " + RotationDegrees;
+		movvec.Text = "globalrot: " + RotationDegrees;
 
 		//Hier bewegt es sich dann wirklich mit den globalen vectoren da hier eben nur global bewegt wird
 		MoveAndSlideWithSnap(vec1, vec2, vec3);
@@ -177,7 +179,8 @@ public class Player : KinematicBody2D
 		}
 		if (Input.IsActionJustPressed("debug"))
 		{
-			RotationDegrees += 4f;
+			rotateplayer.Play("gravityRotate");
+			//RotationDegrees += 4f;
 		}
 	}
 
@@ -201,5 +204,48 @@ public class Player : KinematicBody2D
 			sprite.FlipH = false;
 			if (IsOnFloor()) animplayer.Play("walk");
 		}
+	}
+
+	[Signal]
+	public delegate void enter_area(KinematicBody2D player);
+
+	[Signal]
+	public delegate void exit_area(KinematicBody2D player);
+
+
+	private void _event_enter(Area2D area)
+	{
+		foreach (Node cache in GetNode<Node2D>("/root/Game").GetChildren())
+		{
+			if (cache.Name.BeginsWith("GravityArea"))
+			{
+				Area2D grav = (Area2D) cache;
+				grav.Call("_on_Player_enter_area", this);
+			}
+			Console.Out.WriteLine(cache);
+		}
+		Console.Out.WriteLine("Es gibt nichts mehr zu sehen");
+		//EmitSignal(nameof(enter_area), this);
+	}
+
+
+	private void _event_exit(Area2D area)
+	{
+		foreach (Node cache in GetNode<Node2D>("/root/Game").GetChildren())
+		{
+			if (cache.Name.BeginsWith("GravityArea"))
+			{
+				Area2D grav = (Area2D)cache;
+				grav.Call("_on_Player_exit_area", this);
+			}
+			Console.Out.WriteLine(cache);
+		}
+		Console.Out.WriteLine("Es regt rem esde");
+		//EmitSignal(nameof(exit_area), this);
+	}
+
+	private void _on_GravityArea_call_player_animation(String animation, bool backwarts, float position)
+	{
+		animplayer.Play(animation);
 	}
 }

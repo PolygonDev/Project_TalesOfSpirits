@@ -1,4 +1,7 @@
-using Godot;
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="CSharpScript" id=1]
+script/source = "using Godot;
 using System;
 
 public class GravityArea : Area2D
@@ -22,7 +25,7 @@ public class GravityArea : Area2D
 
 	public override void _Ready()
 	{
-		timer = GetNode<Timer>("Timer");
+		timer = GetNode<Timer>(\"Timer\");
 
 		if (degree > 360) degree = degree % 360;
 		if (targetdegree > 360) targetdegree = targetdegree % 360;
@@ -35,7 +38,7 @@ public class GravityArea : Area2D
 	{
 		if (player != null)
 		{
-			if (rotateplayer.CurrentAnimation != "")
+			if (rotateplayer.CurrentAnimation != \"\")
 			{
 				if (anim == 0 && rotateplayer.CurrentAnimationPosition > var1)
 				{
@@ -65,8 +68,6 @@ public class GravityArea : Area2D
 
 	private void _on_Player_enter_area(KinematicBody2D player)
 	{
-		Console.Out.WriteLine("Dieser name hiere das ist das wichtige dingens::: " + this.Name);
-
 		if (!isPlayerIn)
 		{
 			if (this.player == null)
@@ -74,10 +75,10 @@ public class GravityArea : Area2D
 				this.player = player;
 				foreach (Node cache in player.GetChildren())
 				{
-					if (cache.Name.Equals("RotatePlayer")) {
+					if (cache.Name.Equals(\"RotatePlayer\")) {
 						this.rotateplayer = (AnimationPlayer) cache;
 					}
-					if (cache.Name.Equals("Area2D"))
+					if (cache.Name.Equals(\"Area2D\"))
 					{
 						this.area = (Area2D) cache;
 					}
@@ -104,14 +105,14 @@ public class GravityArea : Area2D
 	{
 		if (isPlayerIn)
 		{
-			rotateplayer.Play("gravityRotate");
+			rotateplayer.Play(\"gravityRotate\");
 			rotateplayer.Advance(0.1f);
 			anim = 0;
 			timer.Stop();
 		}
 		else
 		{
-			rotateplayer.Play("gravityRotate");
+			rotateplayer.Play(\"gravityRotate\");
 			rotateplayer.Advance(var1);
 			anim = 1;
 			timer.Stop();
@@ -120,3 +121,10 @@ public class GravityArea : Area2D
 
 
 }
+"
+
+[node name="GravityArea" type="Area2D"]
+script = SubResource( 1 )
+
+[node name="Timer" type="Timer" parent="."]
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
