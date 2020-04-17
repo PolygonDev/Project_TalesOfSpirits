@@ -14,14 +14,11 @@ public class Player : KinematicBody2D
 	Vector2 UP = new Vector2(0, -1);
 	Vector2 DOWN = new Vector2(0, 1);
 
-	[Export]
-	int speed = 300;
-	[Export]
-	float baseGravity = 27f;
-	[Export]
-	float jump_power = 36;
-	[Export]
-	float jump_speed = 170;
+	[Export] int speed = 300;
+	[Export] float baseGravity = 27f;
+	[Export] float jump_power = 36;
+	[Export] float jump_speed = 170;
+	[Export] float gravity = 3000;
 
 	Vector2 globalVector = new Vector2(0, 1);
 	Vector2 mathAngleToglobal = new Vector2(0, 0);
@@ -91,10 +88,10 @@ public class Player : KinematicBody2D
 			movement.y = baseGravity;
 		}
 
-		check_key_input();
+		CheckKeyInput(delta);
 		setAnimation();
 
-		movement.y *= DOWN.y;
+		movement.y += gravity*DOWN.y;
 
 		//Vectoren ins globale system umwandeln
 		Vector2 vec1 = movement.Rotated(Rotation);
@@ -114,36 +111,36 @@ public class Player : KinematicBody2D
 		movement.x = 0;
 	}
 
-	public void check_key_input()
+	public void CheckKeyInput(float delta)
 	{
 
 		if (Input.IsActionPressed(right))
 		{
 			if (isJumping)
 			{
-				movement.x = speed + jump_speed;
+				movement.x = speed*delta + jump_speed*delta;
 			}
 			else
 			{
-				movement.x = speed;
+				movement.x = speed*delta;
 			}
 		}
 		if (Input.IsActionPressed(left))
 		{
 			if (isJumping)
 			{
-				movement.x = -speed - jump_speed;
+				movement.x = -speed*delta - jump_speed*delta;
 			}
 			else
 			{
-				movement.x = -speed;
+				movement.x = -speed*delta;
 			}
 		}
 		if (Input.IsActionJustPressed(jump) && IsOnFloor())
 		{
 
 			isJumping = true;
-			movement.y -= jump_power * baseGravity;
+			movement.y -= jump_power*delta;
 			jumpings = movement.y;
 		}
 		if (Input.IsActionJustPressed(zoomin))
